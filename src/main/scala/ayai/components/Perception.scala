@@ -41,7 +41,7 @@ class LOS {
   }
 
   def isCollision(position: Position, bounds: Bounds, tileMap: TileMap): Boolean = {
-    tileMap.isPositionInBounds(position)
+    tileMap.clipPositionToBounds(position)
 
     //if on tile Collision go back to original position
     val collision = tileMap.onTileCollision(position, bounds)

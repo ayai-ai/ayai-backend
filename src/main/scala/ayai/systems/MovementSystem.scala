@@ -52,7 +52,7 @@ class MovementSystem extends EntityProcessingSystem(include=List(classOf[Positio
 
         //will update position in function
         val tileMap = world.asInstanceOf[RoomWorld].tileMap
-        tileMap.isPositionInBounds(position)
+        tileMap.clipPositionToBounds(position)
 
         //if on tile Collision go back to original position
         val collision = tileMap.onTileCollision(position, bounds)
