@@ -4,6 +4,7 @@ package ayai.factories
 import ayai.systems._
 import ayai.gamestate.{RoomWorld, GameStateSerializer, MessageProcessorSupervisor}
 import ayai.systems.ai.pathfinding.PathfindingSystem
+import ayai.systems.ai.perception.PerceptionSystem
 
 /** External Imports **/
 import net.liftweb.json._

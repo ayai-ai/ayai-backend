@@ -1,26 +1,15 @@
 package ayai.systems
 
-import ayai.actions.AttackAction
-import ayai.components._
-import ayai.components.SoundEntity
-
 import akka.actor.ActorSystem
-
-import crane.{Entity, EntityProcessingSystem}
-
-import org.slf4j.{Logger, LoggerFactory}
+import ayai.components.{SoundEntity, _}
+import ayai.systems.ai.perception.PerceptionSystem
+import crane.Entity
 
 object SoundSystem {
   def apply(actorSystem: ActorSystem) = new SoundSystem(actorSystem)
 }
 
-class SoundSystem(actorSystem: ActorSystem) extends PerceptionSystem(actorSystem, include=List(classOf[Hearing])) {
-  private val log = LoggerFactory.getLogger(getClass)
-  private val spamLog = false
-  private val TICKS_BETWEEN_PROCESSING = 10
-
-  private var counter = 0
-
+class SoundSystem(actorSystem: ActorSystem) extends GenericPerceptionSystem(actorSystem, include=List(classOf[Hearing])) {
   override def processEntity(e: Entity, deltaTime: Int): Unit = {
     if (counter == TICKS_BETWEEN_PROCESSING) {
       var soundProducingEntity = e
@@ -44,8 +33,10 @@ class SoundSystem(actorSystem: ActorSystem) extends PerceptionSystem(actorSystem
                       hearingEntity.getComponent(classOf[Character])) match {
                       case (Some(char1: Character), Some(char2: Character)) => {
 
-                        if (spamLog) log.warn(char2.name + " hears " + char1.name)
-
+                        val msg = char2.name + " hears " + char1.name
+                        val evt = new PerceptionEvent(soundProducingEntity, hearingEntity, msg, SoundSystem)
+                        if (spamLog) log.warn(msg)
+                        PerceptionSystem(actorSystem).publish(evt)
                       }
                       case _ =>
                     }
@@ -72,5 +63,9 @@ class SoundSystem(actorSystem: ActorSystem) extends PerceptionSystem(actorSystem
   def getDistance(p1: Position, p2: Position): Int = {
     // Manhattan distance
     math.abs(p1.x - p2.x) + math.abs(p1.y - p2.y)
+  }
+
+  override def notify(evt: PerceptionEvent): Unit = {
+    if (spamLog) log.warn("Event Received: "+evt.evtMsg)
   }
 }

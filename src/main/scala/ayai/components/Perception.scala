@@ -3,6 +3,7 @@ package ayai.components
 /** Crane Imports **/
 
 import ayai.gamestate.TileMap
+import ayai.systems.PerceptionEvent
 import crane.{Component, Entity}
 
 import scala.collection.mutable.ArrayBuffer
@@ -147,13 +148,74 @@ class WuLOS extends LOS {
   def average(a: Float, b: Float) = (a + b) / 2
 }
 
-class MemoryContents {
+class MemoryItem(event : PerceptionEvent ) {
+  var memoryEvent = event
   var entityID: Int = -1
   var entityPosition: Option[Position] = None
   var relationship: Int = -1
+  var counter: Int = 0
+
+  def equals(o: MemoryItem) : Boolean = {
+    val source : Boolean = o.memoryEvent.evtSource == this.memoryEvent.evtSource
+    val target : Boolean = o.memoryEvent.evtTarget == this.memoryEvent.evtTarget
+    val system : Boolean = o.memoryEvent.evtSystem == this.memoryEvent.evtSystem
+    if (source && target && system) {
+      true
+    }
+    else {
+      false
+    }
+  }
+}
+
+class MemoryContents() {
+  private val contents : ArrayBuffer[MemoryItem] = new ArrayBuffer[MemoryItem]()
+  def add(a : MemoryItem, allowDuplicates: Boolean = false) = {
+    if(allowDuplicates) {
+      contents += a
+    } else {
+      for (item: MemoryItem <- contents) {
+        if (!item.equals(a)) {
+          contents += a
+        }
+      }
+    }
+  }
+
+  def += (a : MemoryItem) = {
+    this.add(a)
+  }
+
+  def -= (a : MemoryItem) = {
+    contents -= a
+  }
 }
 
 class Memory extends SenseComponent {
-  var memoryAbility: Int = -1
-  var entitiesRemembered: ArrayBuffer[MemoryContents] = new ArrayBuffer[MemoryContents]()
+  var memoryAbility: Int = 2000 // ticks until particular memory is forgotten
+  var memoryContents:  ArrayBuffer[MemoryItem] = new ArrayBuffer[MemoryItem]()
+
+  def addMemory(a : MemoryItem, allowDuplicates: Boolean = false) = {
+    if(allowDuplicates || memoryContents.isEmpty) {
+      memoryContents += a
+    } else {
+      for (item: MemoryItem <- memoryContents) {
+        var duplicate : Boolean = false
+        if (item.equals(a)) {
+          duplicate = true
+        }
+        if (!duplicate) {
+          memoryContents += a
+        }
+      }
+    }
+  }
+
+  def += (a : MemoryItem) = {
+    this.addMemory(a)
+  }
+
+  def -= (a : MemoryItem) = {
+    memoryContents -= a
+  }
 }

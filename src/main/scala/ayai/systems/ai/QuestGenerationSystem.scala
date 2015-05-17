@@ -33,8 +33,8 @@ class QuestGenerationSystem(actorSystem: ActorSystem) extends EntityProcessingSy
 
           // next, we need to populate our quest with objectives. To do this, we'll find the most "significant" thing
           // in an NPC's memory.
-          var significantMemory: MemoryContents = null
-          for( memory : MemoryContents <- initiatorMemory.entitiesRemembered ) {
+          var significantMemory: MemoryItem = null
+          for( memory : MemoryItem <- initiatorMemory.memoryContents ) {
             if ( math.abs(memory.relationship) > math.abs(significantMemory.relationship) ) {
               significantMemory = memory
             }
