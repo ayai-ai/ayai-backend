@@ -1,7 +1,7 @@
 package ayai.gamestate
 
 import ayai.components._
-import ayai.maps.{Tile, Layer, TransportInfo, Tileset}
+import ayai.maps.{Tile, TransportInfo, Tileset}
 
 // 128 x 128 is only a default
 class TileMap(val array: Array[Array[Tile]], var transports: List[TransportInfo], var tilesets: List[Tileset]) {
@@ -21,39 +21,26 @@ class TileMap(val array: Array[Array[Tile]], var transports: List[TransportInfo]
   // Get a tile by a x or y value from the array (example: 32 tileSize value, 65 (position) / 32) = 2 tile
   def valueToTile(value: Int): Int = value / tileSize
 
-  def clipPositionToBounds(position: Position) {
+  def clipPositionToBounds(position: Position): Unit = {
     val maxX = maximumWidth - tileSize
     val maxY = maximumHeight - tileSize
     if (position.x < 0) position.x = 0 else if (position.x > maxX) position.x = maxX
     if (position.y < 0) position.y = 0 else if (position.y > maxY) position.y = maxY
+    // don’t return the mutated position, per the command-query separation principle
   }
 
   def regionCollidesWithATile(position: Position, bounds: Bounds): Boolean = {
-    val newPos = new Position(position.x + bounds.width, position.y + bounds.height)
-    clipPositionToBounds(newPos)
-    val tile = getTileByPosition(newPos)
+    val topRightPosition = Position(position.x + bounds.width, position.y)
+    val bottomLeftPosition = Position(position.x, position.y + bounds.height)
+    val bottomRightPosition = Position(position.x + bounds.width, position.y + bounds.height)
 
-    if (tile.isCollidable) {
-      return true
-    }
-
-    if (getTileByPosition(position).isCollidable) {
-      return true
-    }
-
-    val bottomLeftPosition = new Position(position.x, position.y + bounds.height)
-    clipPositionToBounds(bottomLeftPosition)
-    if (getTileByPosition(bottomLeftPosition).isCollidable){
-      return true
-    }
-
-    val topRightPosition = new Position(position.x + bounds.width, position.y)
     clipPositionToBounds(topRightPosition)
-    if (getTileByPosition(topRightPosition).isCollidable) {
-      return true
-    }
+    clipPositionToBounds(bottomLeftPosition)
+    clipPositionToBounds(bottomRightPosition)
 
-    false
+    val positions = List(position, topRightPosition, bottomLeftPosition, bottomRightPosition)
+    val overlappingTiles = positions.map(getTileByPosition(_))
+    return overlappingTiles.find(tile => tile.isCollidable).isDefined
   }
 
   /**
@@ -61,7 +48,7 @@ class TileMap(val array: Array[Array[Tile]], var transports: List[TransportInfo]
    * If inside transport area, then return the new transport
    */
   def checkIfTransport(characterPosition: Position): Option[TransportInfo] = {
-    for(transport <- transports) {
+    for (transport <- transports) {
       val startPosition = transport.startingPosition
       val endPosition = transport.endingPosition
 
