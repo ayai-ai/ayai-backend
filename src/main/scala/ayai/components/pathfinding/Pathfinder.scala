@@ -32,7 +32,7 @@ class AStarPathfinder(movementStyle: GridMovementStyle) extends Pathfinder(movem
     cameFrom(start) = start
     costSoFar(start) = 0
 
-    while (! frontier.isEmpty) {
+    while (frontier.nonEmpty) {
       val current: NodeMatrixPosition = frontier.dequeue().value
 
       if (current == goal) {
