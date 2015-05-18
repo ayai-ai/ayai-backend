@@ -103,7 +103,7 @@ class MessageProcessor(world: RoomWorld) extends Actor {
               val m = a.action match {
                 case (move: MoveDirection) => move
                 case _ =>
-                  println("Not match for movedirection")
+                  println("No match for MoveDirection")
                   new MoveDirection(0, 0)
               }
 
@@ -122,8 +122,8 @@ class MessageProcessor(world: RoomWorld) extends Actor {
                 }
               }
 
-              val upperLeftx = pos.x
-              val upperLefty = pos.y
+              val upperLeftX = pos.x
+              val upperLeftY = pos.y
 
               val xDirection = m.xDirection
               val yDirection = m.yDirection
@@ -137,7 +137,7 @@ class MessageProcessor(world: RoomWorld) extends Actor {
                 p.components += new Projectile(bulletId)
                 p.components += new Velocity(Constants.PROJECTILE_VELOCITY, Constants.PROJECTILE_VELOCITY)
                 p.components += new Actionable(true, a.action)
-                p.components += new Position(upperLeftx, upperLefty)
+                p.components += new Position(upperLeftX, upperLeftY)
                 p.components += new Bounds(20, 20)
                 p.components += new Frame(weaponRange/Constants.PROJECTILE_VELOCITY)
 
@@ -145,10 +145,10 @@ class MessageProcessor(world: RoomWorld) extends Actor {
                   p.components += SpriteSheetFactory.getSpriteSheet(weaponName, xDirection, yDirection)
               }
               else { //it's melee
-                val topLeftOfAttackx = (weaponRange * xDirection) + upperLeftx
-                val topLeftOfAttacky = (weaponRange * yDirection) + upperLefty
+                val topLeftOfAttackX = (weaponRange * xDirection) + upperLeftX
+                val topLeftOfAttackY = (weaponRange * yDirection) + upperLeftY
 
-                p.components += new Position(topLeftOfAttackx, topLeftOfAttacky)
+                p.components += new Position(topLeftOfAttackX, topLeftOfAttackY)
                 p.components += new Bounds(weaponRange, weaponRange)
                 p.components += new Frame(30)
               }
@@ -243,7 +243,7 @@ class MessageProcessor(world: RoomWorld) extends Actor {
                       inventory.inventory += equippedItem
                       equipment.equipmentMap(equipmentType) = new EmptySlot(equipmentType)
                     }
-                    case _ => println(equipmentType + " not valiid")
+                    case _ => println(equipmentType + " not valid")
                   }
                 }
                 case _ => println(s"User $userId cannot equip $equipmentType.")
@@ -423,7 +423,7 @@ class MessageProcessor(world: RoomWorld) extends Actor {
 
 
           //take item and put it in player inventory
-          var itemToRemove: Item  = null
+          var itemToRemove: Item = null
           for(itemInv <- loot.inventory) {
             if (itemInv.id == itemId) {
               personInv.addItem(itemInv)

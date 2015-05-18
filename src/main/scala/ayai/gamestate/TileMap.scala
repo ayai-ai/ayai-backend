@@ -1,75 +1,54 @@
 package ayai.gamestate
 
-/** Ayai Imports **/
 import ayai.components._
-import ayai.maps.{Tile, Layer, TransportInfo, Tileset}
+import ayai.maps.{Tile, TransportInfo, Tileset}
 
-/** External Imports **/
-import scala.math._
-
-//128 x 128 is only default
+// 128 x 128 is only a default
 class TileMap(val array: Array[Array[Tile]], var transports: List[TransportInfo], var tilesets: List[Tileset]) {
   var file: String = ""
   var width: Int = 128
   var height: Int = 128
   var tileSize: Int = 32
 
-  //getMaximumPosition - get the maximum position value for x
+  //get the maximum position value for x
   def maximumWidth: Int = array.length * tileSize
 
-  //getMaximumHeight - get the maximum position value for y
+  //get the maximum position value for y
   def maximumHeight: Int = array(0).length * tileSize
 
   def getTileByPosition(position: Position): Tile = array(valueToTile(position.x))(valueToTile(position.y))
 
-  // Get a tile by a x or y value from the array (example: 32 tilesize value, 65 (position) / 32) = 2 tile
+  // Get a tile by a x or y value from the array (example: 32 tileSize value, 65 (position) / 32) = 2 tile
   def valueToTile(value: Int): Int = value / tileSize
 
-  def isPositionInBounds(position: Position): Position = {
-    if (max(position.x, 0) <= 0) {
-      position.x = 0
-    } else if (min(position.x, maximumWidth - tileSize) >= maximumWidth-tileSize) {
-      position.x = maximumWidth - tileSize
-    }
-
-    if (max(position.y, 0) <= 0) {
-      position.y = 0
-    } else if (min(position.y, maximumHeight) >= maximumHeight - tileSize) {
-      position.y = maximumHeight - tileSize
-    }
-
-    position
+  def clipPositionToBounds(position: Position): Unit = {
+    val maxX = maximumWidth - tileSize
+    val maxY = maximumHeight - tileSize
+    if (position.x < 0) position.x = 0 else if (position.x > maxX) position.x = maxX
+    if (position.y < 0) position.y = 0 else if (position.y > maxY) position.y = maxY
+    // don’t return the mutated position, per the command-query separation principle
   }
 
-  def onTileCollision(position: Position, bounds: Bounds): Boolean = {
-    val newPos = new Position(position.x + bounds.width, position.y+bounds.height)
-    val tile = getTileByPosition(isPositionInBounds(newPos))
+  def regionCollidesWithATile(position: Position, bounds: Bounds): Boolean = {
+    val topRightPosition = Position(position.x + bounds.width, position.y)
+    val bottomLeftPosition = Position(position.x, position.y + bounds.height)
+    val bottomRightPosition = Position(position.x + bounds.width, position.y + bounds.height)
 
-    if (tile.isCollidable) {
-      return true
-    }
+    clipPositionToBounds(topRightPosition)
+    clipPositionToBounds(bottomLeftPosition)
+    clipPositionToBounds(bottomRightPosition)
 
-    if (getTileByPosition(position).isCollidable) {
-      return true
-    }
-
-    if (getTileByPosition(isPositionInBounds(new Position(position.x, position.y + bounds.height))).isCollidable){
-      return true
-    }
-
-    if (getTileByPosition(isPositionInBounds(new Position(position.x + bounds.width, position.y))).isCollidable) {
-      return true
-    }
-
-    false
+    val positions = List(position, topRightPosition, bottomLeftPosition, bottomRightPosition)
+    val overlappingTiles = positions.map(getTileByPosition(_))
+    return overlappingTiles.find(tile => tile.isCollidable).isDefined
   }
 
   /**
-   * For checkIfTransport, use the characters position and see if they are in any of the transport areas
+   * For checkIfTransport, use the character’s position and see if they are in any of the transport areas
    * If inside transport area, then return the new transport
    */
   def checkIfTransport(characterPosition: Position): Option[TransportInfo] = {
-    for(transport <- transports) {
+    for (transport <- transports) {
       val startPosition = transport.startingPosition
       val endPosition = transport.endingPosition
 

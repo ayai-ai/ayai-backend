@@ -20,50 +20,42 @@ class SenseComponent extends Component {
   }
 }
 
-class Hearing( var hearingAbility : Double) extends SenseComponent {
+class Hearing( var hearingAbility: Double) extends SenseComponent {
 }
 
-class SoundProducing( var intensity : Int) extends Component {
+class SoundProducing( var intensity: Int) extends Component {
 }
 
-class SoundEntity( var intensity : Int, var origin : Position ) extends Entity {
+class SoundEntity( var intensity: Int, var origin: Position ) extends Entity {
 }
 
-class Vision( var los : LOS, var visionRange : Int ) extends SenseComponent {
-  def drawLine(start: Position, end : Position, bounds: Bounds, tileMap: TileMap): Boolean = {
+class Vision( var los: LOS, var visionRange: Int ) extends SenseComponent {
+  def drawLine(start: Position, end: Position, bounds: Bounds, tileMap: TileMap): Boolean = {
     return los.drawLine(start, end, bounds, tileMap)
   }
 
 }
 
 class LOS {
-  def drawLine(start: Position, end : Position, bounds: Bounds, tileMap: TileMap): Boolean = {
+  def drawLine(start: Position, end: Position, bounds: Bounds, tileMap: TileMap): Boolean = {
     false
   }
 
   def isCollision(position: Position, bounds: Bounds, tileMap: TileMap): Boolean = {
-    tileMap.isPositionInBounds(position)
-
-    //if on tile Collision go back to original position
-    val collision = tileMap.onTileCollision(position, bounds)
-    if (collision) {
-      true
-    }
-    else {
-      false
-    }
+    tileMap.clipPositionToBounds(position)
+    tileMap.regionCollidesWithATile(position, bounds)
   }
 }
 
 class BresenhamLOS extends LOS {
-  override def drawLine(start: Position, end : Position, bounds: Bounds, tileMap: TileMap): Boolean = {
-    val signx = if (start.x < end.x) 1 else -1
-    val signy = if (start.y < end.y) 1 else -1
-    var deltax = math.abs(end.x - start.x)
-    val deltay = math.abs(end.y - start.y)
-    if (deltax == 0) deltax = 1 // avoid divide by zero errors
+  override def drawLine(start: Position, end: Position, bounds: Bounds, tileMap: TileMap): Boolean = {
+    val signX = if (start.x < end.x) 1 else -1
+    val signY = if (start.y < end.y) 1 else -1
+    var deltaX = math.abs(end.x - start.x)
+    val deltaY = math.abs(end.y - start.y)
+    if (deltaX == 0) deltaX = 1 // avoid divide by zero errors
     var error: Double = 0.0
-    val deltaerr: Double = math.abs(deltay / deltax)
+    val deltaErr: Double = math.abs(deltaY / deltaX)
 
     var yIter: Int = start.y
     var xIter: Int = start.x
@@ -72,54 +64,54 @@ class BresenhamLOS extends LOS {
       if (isCollision(new Position(xIter, yIter), bounds, tileMap)) {
         result = false
       }
-      error = error + deltaerr
+      error = error + deltaErr
       while (error >= 0.5) {
         if (isCollision(new Position(xIter, yIter), bounds, tileMap)) {
           result = false
         }
-        yIter = yIter + signy
+        yIter = yIter + signY
         error = error - 1.0
       }
-      xIter = xIter + signx
+      xIter = xIter + signX
     }
     result
   }
 }
 
 class WuLOS extends LOS {
-  override def drawLine(start: Position, end : Position, bounds: Bounds, tileMap: TileMap): Boolean = {
+  override def drawLine(start: Position, end: Position, bounds: Bounds, tileMap: TileMap): Boolean = {
     val steep = math.abs(end.y - start.y) > math.abs(end.x - start.x)
     val (p3, p4) = if (steep) (end, start) else (start, end)
     val (a, b) = if (p3.x > p4.x) (p4, p3) else (p3, p4)
-    var deltax = b.x - a.x
-    val deltay = b.y - a.y
-    if (deltax == 0) deltax = 1 // avoid divide by zero errors
-    val gradient = deltay / deltax
+    var deltaX = b.x - a.x
+    val deltaY = b.y - a.y
+    if (deltaX == 0) deltaX = 1 // avoid divide by zero errors
+    val gradient = deltaY / deltaX
     var intersection = 0.0
     var result = true
     var endpointResult = true
 
-    var xpixel1 = math.round(a.x);
+    var xPixel1 = math.round(a.x);
     {
-      val yend = a.y + gradient * (xpixel1 - a.x)
-      val xgap = rearFractional(a.x + 0.5)
-      endpointResult = endpoint(xpixel1, yend, steep, bounds, tileMap)
+      val yEnd = a.y + gradient * (xPixel1 - a.x)
+      val xGap = rearFractional(a.x + 0.5)
+      endpointResult = endpoint(xPixel1, yEnd, steep, bounds, tileMap)
       if (!endpointResult) {result = false}
-      intersection = yend + gradient
+      intersection = yEnd + gradient
     }
 
-    val xpixel2 = math.round(b.x);
+    val xPixel2 = math.round(b.x);
     {
-      val yend = b.y + gradient * (xpixel2 - b.x)
-      val xgap = fractional(b.x + 0.5)
-      endpointResult = endpoint(xpixel2, yend, steep, bounds, tileMap)
+      val yEnd = b.y + gradient * (xPixel2 - b.x)
+      val xGap = fractional(b.x + 0.5)
+      endpointResult = endpoint(xPixel2, yEnd, steep, bounds, tileMap)
       if (!endpointResult) {result = false}
     }
 
-    for (x <- (xpixel1 + 1) to (xpixel2 - 1)) {
+    for (x <- (xPixel1 + 1) to (xPixel2 - 1)) {
       if (steep) {
-        if (isCollision(new Position(intersection.toInt, x), bounds, tileMap)) { result = false } //rearFractional(intersection))
-        if (isCollision(new Position(intersection.toInt+1, x),  bounds, tileMap)) { result = false } //fractional(intersection))
+        if (isCollision(new Position(intersection.toInt, x), bounds, tileMap)) { result = false } // rearFractional(intersection))
+        if (isCollision(new Position(intersection.toInt+1, x),  bounds, tileMap)) { result = false } // fractional(intersection))
       } else {
         if (isCollision(new Position(x, intersection.toInt), bounds, tileMap)) { result = false } // rearFractional(intersection))
         if (isCollision(new Position(x, intersection.toInt+1), bounds, tileMap)) { result = false } // fractional(intersection))
@@ -130,15 +122,15 @@ class WuLOS extends LOS {
     result
   }
 
-  def endpoint(xpixel: Double, yend: Double, steep: Boolean, bounds : Bounds, tileMap : TileMap): Boolean = {
-    val ypixel = floor(yend)
+  def endpoint(xPixel: Double, yEnd: Double, steep: Boolean, bounds: Bounds, tileMap: TileMap): Boolean = {
+    val yPixel = floor(yEnd)
     var result = true
     if (steep) {
-      if (isCollision(new Position(ypixel.toInt, xpixel.toInt), bounds, tileMap)) { result = false } //rearFractional(yend) * xgap)
-      if (isCollision(new Position(ypixel.toInt+1, xpixel.toInt), bounds, tileMap)) { result = false } //fractional(yend) * xgap)
+      if (isCollision(new Position(yPixel.toInt, xPixel.toInt), bounds, tileMap)) { result = false } // rearFractional(yEnd) * xGap)
+      if (isCollision(new Position(yPixel.toInt+1, xPixel.toInt), bounds, tileMap)) { result = false } // fractional(yEnd) * xGap)
     } else {
-      if (isCollision(new Position(xpixel.toInt, ypixel.toInt), bounds, tileMap)) { result = false } //rearFractional(yend) * xgap)
-      if (isCollision(new Position(xpixel.toInt, ypixel.toInt+1), bounds, tileMap)) { result = false } //fractional(yend) * xgap)
+      if (isCollision(new Position(xPixel.toInt, yPixel.toInt), bounds, tileMap)) { result = false } // rearFractional(yEnd) * xGap)
+      if (isCollision(new Position(xPixel.toInt, yPixel.toInt+1), bounds, tileMap)) { result = false } // fractional(yEnd) * xGap)
     }
     result
   }
