@@ -38,7 +38,7 @@ class MovementSystem extends EntityProcessingSystem(include=List(classOf[Positio
     e.getComponent(classOf[Velocity]),
     e.getComponent(classOf[Bounds])) match {
       case (Some(actionable: Actionable), Some(position: Position), Some(velocity: Velocity), Some(bounds: Bounds)) => {
-        val originalPosition = new Position(position.x, position.y)
+
         //if moving then process for the given direction
         if (actionable.active) {
           // if action is a direction
@@ -50,13 +50,13 @@ class MovementSystem extends EntityProcessingSystem(include=List(classOf[Positio
           }
         }
 
-        //will update position in function
+        //clipPositionToBounds will update the position
+        val originalPosition = new Position(position.x, position.y)
         val tileMap = world.asInstanceOf[RoomWorld].tileMap
-        tileMap.isPositionInBounds(position)
+        tileMap.clipPositionToBounds(position)
 
-        //if on tile Collision go back to original position
-        val collision = tileMap.onTileCollision(position, bounds)
-        if (collision) {
+        //if tile collision go back to original position
+        if (tileMap.regionCollidesWithATile(position, bounds)) {
           position.x = originalPosition.x
           position.y = originalPosition.y
         }

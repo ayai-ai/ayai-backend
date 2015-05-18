@@ -143,7 +143,7 @@ object EntityFactory {
         val tileMapString = mapFile.mkString.filterNot({_ == "\n"})
         mapFile.close()
 
-        val json =("type" -> "id") ~
+        val json = ("type" -> "id") ~
           ("id" -> entityId) ~
           ("x" -> x) ~
           ("y" -> y) ~
@@ -164,7 +164,7 @@ object EntityFactory {
   }
 
   /**
-  ** Create all NPCS given in npcs.json
+  ** Create all NPCs given in npcs.json
   **/
   def createNPC(world: World, faction: String, npcValue: AllNPCValues, questBuffer: ArrayBuffer[Quest] = new ArrayBuffer[Quest]()): Entity = {
     val id = new UID().toString
@@ -322,7 +322,7 @@ object EntityFactory {
     val arrayTile: Array[Array[Tile]] = Array.fill[Tile](tmap.width, tmap.height)(new Tile(ListBuffer()))
 
 
-    //get and transorm tiles from a list to multi-dimensional array
+    //get and transform tiles from a list to multi-dimensional array
     for (i <- 0 until width * height) {
       for (bundle <- bundles) {
         if (bundle.data(i) != 0 ) {
