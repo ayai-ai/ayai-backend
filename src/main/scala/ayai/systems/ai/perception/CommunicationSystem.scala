@@ -1,28 +1,23 @@
 package ayai.systems
 
-import ayai.components._
-import ayai.actions._
-
-import crane.{Component, Entity, World, EntityProcessingSystem}
-
 import akka.actor.ActorSystem
-
-import scala.collection.mutable.ArrayBuffer
+import ayai.components._
+import crane.Entity
 
 object CommunicationSystem {
   def apply(actorSystem: ActorSystem) = new CommunicationSystem(actorSystem)
 }
 
-class CommunicationSystem(actorSystem: ActorSystem) extends PerceptionSystem(actorSystem, include=List(classOf[SenseComponent])) {
+class CommunicationSystem(actorSystem: ActorSystem) extends GenericPerceptionSystem(actorSystem, include=List(classOf[SenseComponent])) {
   override def processEntity(e: Entity, deltaTime: Int): Unit = {
 
   }
 
-  def inContact(e: Entity, e2: Entity): Boolean = {
-    false
-  }
+  def inContact(e: Entity, e2: Entity): Boolean = ???
 
-  def communicate(e: Entity, e2: Entity) {
+  def communicate(e: Entity, e2: Entity) = ???
 
+  override def notify(evt: PerceptionEvent): Unit = {
+    if (spamLog) log.warn("Event Received: "+evt.evtMsg)
   }
 }
