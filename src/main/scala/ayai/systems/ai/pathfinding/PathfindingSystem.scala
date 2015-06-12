@@ -33,7 +33,7 @@ class PathfindingSystem(actorSystem: ActorSystem) extends EntityProcessingSystem
       // TODO: replace with real target
       val movementStyle = new ManhattanMovementStyle
       val graphView = new NodeMatrixGraphView(map, movementStyle)
-      val conversionRatio: Float = ???
+      val conversionRatio: Float = roomWorld.tileMap.tileSize
       val nmPosition = NodeMatrixPosition.fromPosition(position, conversionRatio)
       pathfinding.findPath(graphView, nmPosition, nmPosition) match {
         case Some(path) => {
