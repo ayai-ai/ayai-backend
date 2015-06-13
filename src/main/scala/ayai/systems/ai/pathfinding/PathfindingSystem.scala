@@ -15,7 +15,7 @@ object PathfindingSystem {
     classOf[Position]
   )
 
-  def apply(actorySystem: ActorSystem): PathfindingSystem = new PathfindingSystem(actorySystem)
+  def apply(actorSystem: ActorSystem): PathfindingSystem = new PathfindingSystem(actorSystem)
 }
 
 class PathfindingSystem(actorSystem: ActorSystem) extends EntityProcessingSystem(include = PathfindingSystem.COMPONENT_INCLUDES) {
