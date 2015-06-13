@@ -1,9 +1,7 @@
 package ayai.components.pathfinding
 
-import ayai.components.Position
-
 trait DistanceHeuristic {
-  def estimateDistance(start: Position, end: Position): Double
+  def estimateDistance(start: NodeMatrixPosition, end: NodeMatrixPosition): Double
 }
 
 /**
@@ -16,7 +14,7 @@ trait DistanceHeuristic {
 class ManhattanDistance extends DistanceHeuristic {
   private val SCALE_FACTOR = 1
 
-  def estimateDistance(start: Position, end: Position): Double = {
+  def estimateDistance(start: NodeMatrixPosition, end: NodeMatrixPosition): Double = {
     val dx = math.abs(start.x - end.x)
     val dy = math.abs(start.y - end.y)
 
@@ -34,7 +32,7 @@ class ManhattanDistance extends DistanceHeuristic {
 class ChebyshevDistance extends DistanceHeuristic {
   private val SCALE_FACTOR = 1
 
-  def estimateDistance(start: Position, end: Position): Double = {
+  def estimateDistance(start: NodeMatrixPosition, end: NodeMatrixPosition): Double = {
     val dx = math.abs(start.x - end.x)
     val dy = math.abs(start.y - end.y)
 
@@ -52,7 +50,7 @@ class ChebyshevDistance extends DistanceHeuristic {
 class EuclideanDistance extends DistanceHeuristic {
   private val SCALE_FACTOR = 1
 
-  def estimateDistance(start: Position, end: Position): Double = {
+  def estimateDistance(start: NodeMatrixPosition, end: NodeMatrixPosition): Double = {
     val dx = math.abs(start.x - end.x)
     val dy = math.abs(start.y - end.y)
 
